@@ -1,0 +1,13 @@
+import admin from "firebase-admin"
+
+const base64Secret = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+
+const serviceAccount = JSON.parse(
+  Buffer.from(base64Secret, "base64").toString("utf8")
+);
+
+admin.initializeApp({
+    credential:admin.credential.cert(serviceAccount)
+})
+
+export default admin                                       
