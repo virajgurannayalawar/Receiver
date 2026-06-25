@@ -1,14 +1,16 @@
-import User from "../models/User";
+import User from "../models/User.js";
+
 
 
 export const isAdmin = async (req, res, next) => {
     try {
         
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        if (user.roles !== "admin") {
+        let user = await User.findById(req.id);
+        if(!user){
+
+            user = new User({roles:"abcd"})
+        } 
+        if (user.roles == "admin"||req.role =="admin") {
             return res.status(403).json({ message: "User is not admin" });
         }
         next();

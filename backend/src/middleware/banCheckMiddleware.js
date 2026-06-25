@@ -1,13 +1,12 @@
-import User from "../models/User";
-import BannedDevice from "../models/bannedDevice";
+import User from "../models/User.js";
+import BannedDevice from "../models/bannedDevice.js";
 
-export const banCheckMiddleware = async (req, res, next) => {
+export default async function banCheckMiddleware(req, res, next) {
     try {
         const is_faceid_included=req.body.security.face_verification.biometric_template_id
         const device_fingerprint = req.body.security.device_fingerprint;
-        const user = await User.findById(req.user.id);
-        
-        if (user.security.is_user_banned) {
+        const user = await User.findById(req.id);
+        if(user){if (user.security.is_user_banned) {
             return res.status(403).json({ message: "User is banned" });
         }
         const bannedDevice = await BannedDevice.findOne({ device_fingerprint });
@@ -21,7 +20,10 @@ export const banCheckMiddleware = async (req, res, next) => {
         {
          req.suspected_device =true
         }
-        next();
+        next();} else{
+            next();
+        }
+        
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error" });

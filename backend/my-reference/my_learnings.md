@@ -1,0 +1,1 @@
+Whenever you read a state variable, a prop, or any value derived from them inside a useEffect hook, you must include it in the dependency array.

@@ -71,9 +71,9 @@ const UserSchema = new mongoose.Schema(
           type: Boolean,
           default: false 
         },
-        biometric_template_id: {
-          type: String 
-        }
+       biometric_template_id: [{ 
+          type: Number 
+        }] 
     }
     },
     financials: {

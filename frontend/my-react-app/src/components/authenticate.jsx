@@ -4,7 +4,7 @@ import Login from "./login.jsx"
 import Register from "./register.jsx"
 import Google from "./google.jsx"
 
-export default function Authenticate() {
+export default function Authenticate({authentication,setAuthentication,deviceFingerPrint}) {
     const [activeScreen, setActiveScreen] = useState(null)
 
 
@@ -33,9 +33,9 @@ export default function Authenticate() {
                     </button>
                 </div>
               )}
-                            {activeScreen === 'login' && <Login onNavigate={activeScreen} />}
-                            {activeScreen === 'register' && <Register onNavigate={activeScreen} />}
-                            {activeScreen === 'google' && <Google onNavigate={activeScreen} />}
+                            {activeScreen === 'login' && <Login onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication}  deviceFingerPrint={deviceFingerPrint}/>}
+                            {activeScreen === 'register' && <Register onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication} deviceFingerPrint={deviceFingerPrint}/>}
+                            {activeScreen === 'google' && <Google onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication} deviceFingerPrint={deviceFingerPrint} />}
 
                     
             </div>

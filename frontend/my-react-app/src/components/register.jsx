@@ -11,19 +11,17 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 
 
-const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
 
 
-
-function InitialForm({ onNext, formData, setFormData, }) {
-
+function InitialForm({ onNext, formData, setFormData }) {
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((previous) => ({ ...previous, [name]: value }));
-
+        
     };
-
-
+    
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!formData.phone.startsWith("+")) {
@@ -32,8 +30,8 @@ function InitialForm({ onNext, formData, setFormData, }) {
         }
         onNext();
     };
-
-
+    
+    
     return (
         <div className="flex flex-col gap-4" >
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -45,7 +43,7 @@ function InitialForm({ onNext, formData, setFormData, }) {
                     onChange={handleInputChange}
                     placeholder="Full Name"
                     className="bg-white text-2xl font-medium p-2 border"
-                />
+                    />
                 <input
                     type="tel"
                     name="phone"
@@ -54,7 +52,7 @@ function InitialForm({ onNext, formData, setFormData, }) {
                     onChange={handleInputChange}
                     placeholder="Contact Number (with +country code)"
                     className="bg-white text-2xl font-medium p-2 border"
-                />
+                    />
                 <input
                     type="email"
                     name="email" // Wait, mapping form to state
@@ -63,7 +61,7 @@ function InitialForm({ onNext, formData, setFormData, }) {
                     onChange={handleInputChange}
                     placeholder="Email Id"
                     className="bg-white text-2xl font-medium p-2 border"
-                />
+                    />
                 <input
                     type="password"
                     name="password"
@@ -72,12 +70,12 @@ function InitialForm({ onNext, formData, setFormData, }) {
                     onChange={handleInputChange}
                     placeholder="Password"
                     className="p-2 border text-2xl"
-                />
+                    />
 
                 <button
                     type="submit"
                     className="p-2 bg-red-200 hover:bg-red-400 cursor-pointer text-xl"
-                >
+                    >
                     Submit
                 </button>
 
@@ -92,27 +90,27 @@ function InitialForm({ onNext, formData, setFormData, }) {
 
 
 
-function PhoneVerification({ onNext, formData, recaptchaVerifierRef }) {
-
-
+function PhoneVerification({ onNext, formData, recaptchaVerifierRef, setFcm_token, setFirebase_id_token }) {
+    
+    
     const [confirmationResult, setConfirmationResult] = useState(null);
     const [isLoading, setIsLoading] = useState(false)
     const hasSentSms = useRef(false)
     const [otp, setOtp] = useState("");
-
-
+    
+    
     useEffect(() => {
         if (hasSentSms.current) return;
         hasSentSms.current = true
         const sendSms = async () => {
-
-
+            
+            
             try {
                 setIsLoading(true)
                 const appVerifier = recaptchaVerifierRef.current;
                 const confirmation = await signInWithPhoneNumber(auth, formData.phone, appVerifier);
                 setConfirmationResult(confirmation);
-
+                
             } catch (err) {
                 console.error("error sending sms :", err);
                 alert(err.message);
@@ -120,22 +118,25 @@ function PhoneVerification({ onNext, formData, recaptchaVerifierRef }) {
             } finally {
                 setIsLoading(false)
             }
-
-
+            
+            
         }
         sendSms();
     }, [recaptchaVerifierRef, formData.phone])
-
+    
     const verifyOtp = async (e) => {
-
+        
         e.preventDefault();
-
+        
         if (!confirmationResult) return;
         setIsLoading(true)
-
+        
         try {
             const result = await confirmationResult.confirm(otp);
-            console.log("phone number verifiacation successfull :", result.user)
+            const idToken = await result.user.getIdToken();
+            setFirebase_id_token(idToken);
+            
+            setFcm_token("abcdefgh")//i will setup this afterwards
             onNext();
         } catch (err) {
             console.error("Error verifying OTP:", err);
@@ -143,10 +144,10 @@ function PhoneVerification({ onNext, formData, recaptchaVerifierRef }) {
         } finally {
             setIsLoading(false)
         }
-
-
-
-
+        
+        
+        
+        
     };
     return (
         <div>
@@ -161,12 +162,12 @@ function PhoneVerification({ onNext, formData, recaptchaVerifierRef }) {
                         onChange={(e) => setOtp(e.target.value)}
                         placeholder="Enter 6-digit OTP"
                         className="bg-white text-2xl font-medium p-2 border"
-                    />
+                        />
                     <button
                         type="submit"
                         className="p-2 bg-blue-200 hover:bg-blue-400 cursor-pointer text-xl"
                         disabled={isLoading}
-                    >
+                        >
                         {isLoading ? "verifying otp" : "Verify OTP"}
                     </button>
                 </form>
@@ -183,10 +184,11 @@ function PhoneVerification({ onNext, formData, recaptchaVerifierRef }) {
 
 
 function FaceVerification({ onNext, set_biometric_template_id, biometric_template_id }) {
-
-
-
-
+    
+    
+    
+    
+    const MODEL_URL = import.meta.env.VITE_FACE_API_MODEL_URL
     const [image, setImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isModel, setIsModel] = useState(false);
@@ -258,7 +260,7 @@ function FaceVerification({ onNext, set_biometric_template_id, biometric_templat
             )
                 .withFaceLandmarks()
                 .withFaceDescriptor();
-            if(!detection){
+            if (!detection) {
                 throw new Error("face not detected try agian")
             }
             set_biometric_template_id(Array.from(detection.descriptor))
@@ -351,10 +353,14 @@ function FaceVerification({ onNext, set_biometric_template_id, biometric_templat
 
 
 // 2. Main Coordinator Component
-export default function Register() {
+export default function Register({ authentication, setAuthentication, deviceFingerPrint }) {
     // Use a string state to easily read and manage current steps
     const [currentStep, setCurrentStep] = useState('FORM');
     const [biometric_template_id, set_biometric_template_id] = useState(null)
+    const [fcm_token, setFcm_token] = useState(null)
+    const [firebase_id_token, setFirebase_id_token] = useState(null)
+
+
     const recaptchaVerifierRef = useRef(null)
     const [formData, setFormData] = useState({
         name: "",
@@ -384,6 +390,7 @@ export default function Register() {
             }
         }
 
+
         return () => {
             if (recaptchaVerifierRef.current) {
                 recaptchaVerifierRef.current.clear();
@@ -392,6 +399,77 @@ export default function Register() {
         };
 
     }, []);
+    useEffect(() => {
+        if (currentStep === 'SUCCESS') {
+            saveUser();
+        }
+    }, [currentStep]);
+
+
+    const saveUser = async () => {
+        try {
+
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}auth/register`, {
+
+                id: null,
+                phone: formData.phone,
+                email: formData.email,
+                password: formData.password,
+                name: formData.name,
+                google: null,
+                security: {
+                    device_fingerprint: deviceFingerPrint.current,
+                    firebase_id_token: firebase_id_token,
+                    fcm_token: fcm_token,
+                    face_verification: {
+                        is_registered: true
+                        ,
+                        biometric_template_id: biometric_template_id
+                    }
+                },
+                role: "client"
+            }
+            )
+            const token = response.data.token
+            localStorage.setItem("token", token);
+            setAuthentication((previous) => ({
+                ...previous, isAuthenticated: true,
+                token: token
+            }))
+
+            // console.log({
+
+            //         id:null,
+            //         phone: formData.phone,
+            //         email: formData.email,
+            //         password: formData.password,
+            //         name: formData.name,
+            //         google: null,
+            //         security: {
+            //             device_fingerprint: deviceFingerPrint.current,
+            //             firebase_id_token:firebase_id_token,
+            //             fcm_token:fcm_token,
+            //             face_verification: {
+            //                 is_registered: true
+            //                 ,
+            //                 biometric_template_id: biometric_template_id
+            //             }
+            //         },
+            //         role:"client"
+            //     })
+            // const token=1234
+            //  localStorage.setItem("token", token);
+            //  setAuthentication((previous) => ({ ...previous,isAuthenticated:true,
+            //  token:token}))
+
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            console.log("Request completed");
+        }
+
+    }
 
     return (
         <div style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
@@ -403,23 +481,18 @@ export default function Register() {
             )}
 
             {currentStep === 'PHONE_VERIFY' && (
-                <PhoneVerification onNext={() => setCurrentStep('FACE_VERIFY')} recaptchaVerifierRef={recaptchaVerifierRef} formData={formData} />
+                <PhoneVerification onNext={() => setCurrentStep('FACE_VERIFY')} recaptchaVerifierRef={recaptchaVerifierRef} formData={formData} setFirebase_id_token={setFirebase_id_token} setFcm_token={setFcm_token} />
             )}
 
             {currentStep === 'FACE_VERIFY' && (
                 <FaceVerification onNext={() => setCurrentStep('SUCCESS')} set_biometric_template_id={set_biometric_template_id} biometric_template_id={biometric_template_id} />
             )}
 
-            {currentStep === 'SUCCESS' && (
-                <div className="success-banner">
-                    <h3>🎉 Successfully Registered!</h3>
-                    <p>Your profile is fully set up and secure.</p>
-                    
-                </div>
-            )}
+
             {/* Container where Google renders the actual reCAPTCHA widget */}
             <div id="recaptcha-container" style={{ visibility: 'hidden', height: 0 }}></div>
 
         </div>
     );
 }
+

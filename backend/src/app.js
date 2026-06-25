@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import ConnectDB from "./config/db.js";
-import authroutes from "./routes/auth.js"
+import authroutes from "./routes/authroutes.js"
 import banCheckMiddleware from "./middleware/banCheckMiddleware.js";
 dotenv.config();
 

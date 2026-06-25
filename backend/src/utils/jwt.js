@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 
-export const generateToken=async(user0)=>{
+export const generateToken=(user)=>{
 const payload = {
   id: user._id,       // 1. The database ID (Crucial for looking up real-time data)
   email: user.email,   // 2. User identification (Handy for frontend profile displays)

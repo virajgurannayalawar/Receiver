@@ -4,7 +4,7 @@ import { registerUser, loginUser, GoogleLogin } from "../controllers/AuthControl
 
 const router=Router();
 
-router.post("/register",registerUser);
+router.post("/register",isAdmin,registerUser);
 router.post("/login",isAdmin,loginUser);
 router.post("/google_login",isAdmin,GoogleLogin);
 

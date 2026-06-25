@@ -1,19 +1,20 @@
 import User from "../models/User.js";
 import BannedDevice from "../models/bannedDevice.js";
 import { generateToken } from "../utils/jwt.js";
-import bcrypt from "brcypt"
-import admin from "../config/firebaseAdmin.js";
+import bcrypt from "bcryptjs";
+import { auth } from "../config/firebaseAdmin.js";
+
 
 
 
 
 export const registerUser = async (req, res) => {
   try {
-    const { phone, email, password, name, google, security } = req.body
+    const { phone, email, password, name, google, security,role } = req.body
     let profile_picture = req.body.profile_picture; 
     if (!phone || !email || !password) {
       return res.status(400).json({ message: "Phone, email, and password are required" });
-    }
+    } 
 
     const user = await User.findOne({ email });
 
@@ -38,7 +39,8 @@ export const registerUser = async (req, res) => {
     
 
     // 1. CRYPTOGRAPHICALLY VERIFY THE OTP TOKEN VIA FIREBASE ADMIN SDK. This safely decodes the token using Google's cached public keys
-    const decodedFirebaseToken = await admin.auth().verifyIdToken(security.firebase_id_token);
+const decodedFirebaseToken = await auth.verifyIdToken(security.firebase_id_token);
+
 
     // 2. Extract the verified number from the token payload
     const verifiedPhoneNumber = decodedFirebaseToken.phone_number;
@@ -64,8 +66,6 @@ export const registerUser = async (req, res) => {
     }
 
     delete security.firebase_id_token
-
-
     
     const newUser = new User({
       phone,
@@ -74,12 +74,16 @@ export const registerUser = async (req, res) => {
       name,
       profile_picture,
       google,
-      face_verification,
-      security
+      security,
+      role
     });
+    const token = generateToken(newUser)
+    newUser.token_version = newUser.token_version + 1
 
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully",
+      token:token
+     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
@@ -106,7 +110,6 @@ export const loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "User logged in successfully",
-      user: user,
       token: token
     });
   } catch (error) {
@@ -139,7 +142,6 @@ export const GoogleLogin = async (req, res) => {
     await user.save()
     res.status(200).json({
       message: "User logged in successfully",
-      user: user,
       token: token
     });
 
