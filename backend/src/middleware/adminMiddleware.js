@@ -5,7 +5,7 @@ import User from "../models/User.js";
 export const isAdmin = async (req, res, next) => {
     try {
         
-        let user = await User.findById(req.id);
+        let user = await User.findById(req.email);
         if(!user){
 
             user = new User({roles:"abcd"})

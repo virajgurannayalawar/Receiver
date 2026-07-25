@@ -1,11 +1,14 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { useState } from "react"
 import Login from "./login.jsx"
 import Register from "./register.jsx"
 import Google from "./google.jsx"
 
-export default function Authenticate({authentication,setAuthentication,deviceFingerPrint}) {
+
+export default function Authenticate() {
     const [activeScreen, setActiveScreen] = useState(null)
+
+
 
 
     return (
@@ -24,21 +27,21 @@ export default function Authenticate({authentication,setAuthentication,deviceFin
                             <button onClick={() => setActiveScreen('google')} className="bg-blue-400 p-4 rounded-b-lg text-center text-2xl text-gray-700-mb hover:bg-blue-500 shadow-l rounded-xl cursor-pointer" >
                                 continue with google
                             </button>
-                            </div>
-              )}
-              {activeScreen && (
-                <div>
-                    <button onClick={()=>setActiveScreen(null)} className="flex items-baseline text-sm hover:bg-gray-100 cursor-pointer">
-                        ← Back to options
-                    </button>
-                </div>
-              )}
-                            {activeScreen === 'login' && <Login onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication}  deviceFingerPrint={deviceFingerPrint}/>}
-                            {activeScreen === 'register' && <Register onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication} deviceFingerPrint={deviceFingerPrint}/>}
-                            {activeScreen === 'google' && <Google onNavigate={activeScreen} authentication={authentication} setAuthentication={setAuthentication} deviceFingerPrint={deviceFingerPrint} />}
+                        </div>
+                    )}
+                    {activeScreen && (
+                        <div>
+                            <button onClick={() => setActiveScreen(null)} className="flex items-baseline text-sm hover:bg-gray-100 cursor-pointer">
+                                ← Back to options
+                            </button>
+                        </div>
+                    )}
+                    {activeScreen === 'login' && <Login onNavigate={activeScreen} />}
+                    {activeScreen === 'register' && <Register onNavigate={activeScreen} />}
+                    {activeScreen === 'google' && <Google onNavigate={activeScreen} />}
 
-                    
-            </div>
+
+                </div>
 
             </div>
         </>
