@@ -4,7 +4,7 @@ export const authenticationReducer = createSlice({
   name: 'authentication',
   initialState: {
     value: {isAuthenticated:false,  
-            user: { id: "", email: "", role: "",token_version:null, 
+            user : { id: "", email: "", role: "",token_version:null, 
         iat:null,
         exp:null}}
   },
@@ -13,13 +13,13 @@ export const authenticationReducer = createSlice({
        
       state.value.isAuthenticated =payload
     },
-    setUser:(state,{payload})=>{
+    setUserData:(state,{payload})=>{
       state.value.user= payload
     }
   }
 })
 
 // Action creators are generated for each case reducer function
-export const { setIsAuthenticated,setUser } = authenticationReducer.actions
+export const { setIsAuthenticated,setUserData } = authenticationReducer.actions
 
 export default authenticationReducer.reducer

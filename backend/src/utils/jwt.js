@@ -5,6 +5,7 @@ const payload = {
   id: user._id,       // 1. The database ID (Crucial for looking up real-time data)
   email: user.email,   // 2. User identification (Handy for frontend profile displays)
   role: user.roles,    // 3. System permissions (To instantly block standard users from admin panels)
+   currentRole: user.currentRole,
   token_version: user.token_version || 0 // 4. Optional Security Field (Explained below)
 };
 

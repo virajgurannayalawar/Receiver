@@ -12,13 +12,14 @@ import { auth } from "../config/firebaseAdmin.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { phone, email, password, name, google, security,role } = req.body
+    const { phone, email, password, name, google, security,roles } = req.body
     let profile_picture = req.body.profile_picture; 
     if (!phone || !email || !password) {
       return res.status(400).json({ message: "Phone, email, and password are required" });
     } 
 
     const user = await User.findOne({ email });
+    console.log("Existing user found in DB:", user); 
 
     if (user) {
       return res.status(400).json({ message: "User already exists" });
@@ -76,10 +77,11 @@ export const registerUser = async (req, res) => {
       name,
       profile_picture,
       google,
-      security,
-      role
+      security
     });
     newUser.security.device_fingerprints.push(security.device_fingerprint)
+    // newUser.roles.push(roles)   //think about duplicacy afterwards 
+
     const token = generateToken(newUser)
     newUser.token_version = newUser.token_version + 1
 
@@ -99,7 +101,7 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   
-  const { email, password,security } = req.body
+  const { email, password,security ,phone} = req.body
   if(!req.suspected_device){
     try {
     
@@ -192,7 +194,7 @@ export const loginUser = async (req, res) => {
 
 export const GoogleLogin = async (req, res) => {
   try {
-    const google = req.body
+    const {google,security,device_fingerprint} = req.body
     const user = await User.findOne({ "google.id": google.id });
     if (!user) {
      return res.send({ message: "register user" })
@@ -225,6 +227,30 @@ export const GoogleLogin = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 
+
+
+}
+
+export  const changeMode =async(req,res)=>{
+
+try{
+  const user=await User.findById(req.user.id)
+  if(user.roles.includes("receiver"))
+  {
+    if(user.currentRole=="receiver"){
+       await User.updateOne({_id:user.id},{$set:{currentRole:"requester"}})
+      
+       return res.status(200).json({ message:"mode changed successfully",currentRole:"requester" });
+      }else{
+       await User.updateOne({_id:user.id},{$set:{currentRole:"receiver"}})
+         return res.status(200).json({ message:"mode changed successfully",currentRole:"receiver" });
+      }
+     
+  }else {
+      return res.status(401).json({ message:"receiver mode not enabled" });
+
+  }
+}catch(err){}
 
 
 }

@@ -13,7 +13,7 @@ try {
     }
     const decoded =  await jwt.verify(token, secretKey);
     if(decoded){
-    console.log("Token is valid! ");
+    
     req.user=decoded
      next();
     }

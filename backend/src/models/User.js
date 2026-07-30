@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
-    phone: { 
+    phone: {
       type: String,
       required: false,
       unique: true,
@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       sparse: true
     },
-    email:{
+    email: {
       type: String,
       required: [true, "Email is required"],
       unique: true,
@@ -23,9 +23,9 @@ const UserSchema = new mongoose.Schema(
       trim: true
     },
     name: {
-      type: String, 
+      type: String,
       trim: true
-    }, 
+    },
     profile_picture: {
       type: String,
       default: "/profile/avatar.png" // Fallback placeholder
@@ -41,14 +41,20 @@ const UserSchema = new mongoose.Schema(
         type: String
       }
     },
-      token_version: {
+    token_version: {
       type: Number,
       default: 0
     },
     roles: {
-      type: String, 
-      enum: ['client', 'receiver', 'admin'],
-      default: 'client'
+      type: [String],
+      enum: ['requester', 'receiver', 'admin'],
+      default: ['requester']
+    },
+
+    currentRole: {
+      type: String,
+      enum: ['requester', 'receiver', 'admin'],
+      default: 'requester'
     },
     security: {
       device_fingerprints: [{
@@ -69,12 +75,12 @@ const UserSchema = new mongoose.Schema(
       face_verification: {
         is_registered: {
           type: Boolean,
-          default: false 
+          default: false
         },
-       biometric_template_id: [{ 
-          type: Number 
-        }] 
-    }
+        biometric_template_id: [{
+          type: Number
+        }]
+      }
     },
     financials: {
       wallet_balance: {
@@ -106,8 +112,8 @@ const UserSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true 
-  
+    timestamps: true
+
   }
 );
 

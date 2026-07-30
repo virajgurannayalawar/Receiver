@@ -432,7 +432,7 @@ export default function Register() {
                         biometric_template_id: biometric_template_id
                     }
                 },
-                role: "client"
+                roles: "requester"
             }
             )
             const token = response.data.token
@@ -474,6 +474,7 @@ export default function Register() {
                 dispatch(ban())
                 return
             }
+            console.log("Backend 400 Error details:", error.response?.data);
             console.error(error);
         } finally {
             console.log("Request completed");

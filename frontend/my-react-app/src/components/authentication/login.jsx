@@ -476,7 +476,7 @@ export default function Login() {
                         biometric_template_id: biometric_template_id
                     }
                 },
-                role: "client"
+                roles: "requester"
             }
             )
             dispatch(setIsAuthenticated(true))
@@ -522,7 +522,7 @@ export default function Login() {
                         biometric_template_id: biometric_template_id
                     }
                 },
-                role: "client"
+                roles: "requester"
             }
             )
             dispatch(setIsAuthenticated(true))

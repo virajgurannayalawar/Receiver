@@ -3,7 +3,8 @@ import axios from "axios";
 import { useSelector, useDispatch } from 'react-redux';
 import { ban } from "../../redux/banCheck.js";
 import { suspect, unSuspect } from "../../redux/checkSuspect.js"
-import { setIsAuthenticated} from "../../redux/authentication.js";
+import { setIsAuthenticated } from "../../redux/authentication.js";
+
 
 
 
@@ -64,7 +65,7 @@ function UploadWidget({ setFormData }) {
             data.append("api_key", apiKey);
 
 
-            const res = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, data);
+            const res = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, data,{withCredentials:false});
 
 
             setFormData(prev => ({ ...prev, screenshot_url: res.data.secure_url }));
@@ -309,6 +310,7 @@ export default function ReqPickup() {
     });
 
     const deviceFingerPrint = useSelector(state => state.deviceFingerPrint.value);
+    const location = useSelector(state => state.location.value);
 
     const dispatch = useDispatch();
 
@@ -320,7 +322,7 @@ export default function ReqPickup() {
 
     const savePickupReq = async () => {
         try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/request/pickup`, {
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}request/pickup`, {
                 token: authentication.token,
                 vendor: formData.vendor,
                 delivery_partner: formData.delivery_partner,
@@ -331,6 +333,10 @@ export default function ReqPickup() {
                 screenshot_url: formData.screenshot_url,
                 security: {
                     device_fingerprint: deviceFingerPrint,
+                },
+                currentLocation: {
+                    type: 'Point',
+                    coordinates: [location.longitude,location.latitude]
                 },
                 role: "client"
             });

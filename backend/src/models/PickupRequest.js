@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const PickUpSchema = new mongoose.Schema({
+const PickUp  = new mongoose.Schema({
   client_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -91,4 +91,4 @@ const PickUpSchema = new mongoose.Schema({
 
 
 
-export default mongoose.model("Order", PickUpSchema)
+export default mongoose.model("PickUp", PickUp)

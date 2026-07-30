@@ -9,9 +9,10 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ban, unBan } from "./redux/banCheck.js"
 import { suspect, unSuspect } from "./redux/checkSuspect.js"
-import { setIsAuthenticated ,setUser } from "./redux/authentication.js";
+import { setIsAuthenticated ,setUserData } from "./redux/authentication.js";
 import { setDeviceFingerPrint } from "./redux/deviceFingerPrint.js";
 import { setLocation } from "./redux/location.js";
+import { setRole } from "./redux/role.js";
 import axios from "axios";
 
 
@@ -27,27 +28,45 @@ function App() {
 
     axios.defaults.withCredentials=true;
 
-useEffect(() => {
+
+    // Verify User Session
+  useEffect(() => {
     const verifySession = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}auth/check-auth`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}auth/check-auth`
+        );
         if (response.data.isAuthenticated) {
           dispatch(setIsAuthenticated(true));
           if (response.data.user) {
-            dispatch(setUser(response.data.user))
+            dispatch(setUserData(response.data.user));
           }
         }
+       
       } catch (error) {
-        console.log("Session invalid or expired");
-        dispatch(setIsAuthenticated(false));
+        const serverMessage = error.response?.data?.message;
+
+        if (serverMessage === "User is banned" || serverMessage === "Device is banned") {
+          dispatch(ban());
+          return;
+        }
+
+        if (serverMessage === "Device is suspected need further verification.please verify face  ") {
+          dispatch(suspect());
+          return;
+        }
+        if (serverMessage === "session expired") {
+          dispatch(setIsAuthenticated(false));
+          return;
+        }
+        console.error(error);
       } finally {
-        setLoading(false); // Finished checking
+        setLoading(false);
       }
     };
 
     verifySession();
   }, [dispatch]);
-
 
     useEffect(() => {
 
@@ -78,29 +97,7 @@ useEffect(() => {
         };
     }, [])
 
-       useEffect(() => {
-
-
-
-        const getLocation = async () => {
-           
-            try {
-            
- 
-            } catch (err) {
-                console.error("error in getting location of  device", err)
-            }
-
-        }
-        getLocation();
-
-        return () => {
-
-            dispatch(setLocation(null))
-
-        };
-    }, [])
-
+      
 
 if (loading) {
     return <div className="flex h-screen items-center justify-center text-2xl font-semibold">Verifying Session...</div>;
