@@ -258,6 +258,24 @@ function Form({ onNext, formData, setFormData }) {
                 />
                 <input
                     type="text"
+                    name="item_weight"
+                    required
+                    value={formData.item_weight}
+                    onChange={handleInputChange}
+                    placeholder="approx weight of item"
+                    className="bg-white text-2xl font-medium p-2 border"
+                />
+                <input
+                    type="number"
+                    name="arrival_time"
+                    required
+                    value={formData.arrival_time}
+                    onChange={handleInputChange}
+                    placeholder="arrival time of package "
+                    className="bg-white text-2xl font-medium p-2 border"
+                />
+                <input
+                    type="text"
                     name="block"
                     required
                     value={formData.block}
@@ -306,7 +324,9 @@ export default function ReqPickup() {
         block: "",
         floor: "",
         room: "",
-        screenshot_url: ""
+        screenshot_url: "",
+        item_weight:"",
+        arrival_time:""
     });
 
     const deviceFingerPrint = useSelector(state => state.deviceFingerPrint.value);
@@ -327,10 +347,13 @@ export default function ReqPickup() {
                 vendor: formData.vendor,
                 delivery_partner: formData.delivery_partner,
                 item_name: formData.item_name,
+                item_weight:"",
+                arrival_time:"",
                 block: formData.block,
                 floor: formData.floor,
                 room: formData.room,
                 screenshot_url: formData.screenshot_url,
+
                 security: {
                     device_fingerprint: deviceFingerPrint,
                 },

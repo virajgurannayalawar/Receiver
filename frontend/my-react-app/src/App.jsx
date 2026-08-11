@@ -3,8 +3,12 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useRef } from "react";
 import Authenticate from "./components/authentication/authenticate.jsx";
-import Home from "./components/home.jsx";
+import RoleSetter from "./components/RoleSetter.jsx";
 import Login from "./components/authentication/login.jsx"
+
+
+
+
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import { useSelector, useDispatch } from 'react-redux'
 import { ban, unBan } from "./redux/banCheck.js"
@@ -68,7 +72,27 @@ function App() {
     verifySession();
   }, [dispatch]);
 
-    useEffect(() => {
+  // Check Role Mode from backend and sync with Redux
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!authentication.isAuthenticated) return;
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}auth/checkRole`
+        );
+        if (response.data.currentRole) {
+          dispatch(setRole(response.data.currentRole));
+        }
+      } catch (error) {
+        console.error("Failed to fetch current role mode:", error);
+      }
+    };
+
+    checkRole();
+  }, [authentication.isAuthenticated, dispatch]);
+
+  useEffect(() => {
+
 
 
 
@@ -114,7 +138,7 @@ if (loading) {
                     {!authentication.isAuthenticated && (
                         <Authenticate/>)}
                     {authentication.isAuthenticated && (
-                        <Home />)}
+                        <RoleSetter/>)}
                 </>) : (<div><h1>your device is suspected for fraud, login again with extra verification</h1>
                     <button onClick={() => setUrgentAuthentication(true)}>verify device now</button>
                 </div>)}</>

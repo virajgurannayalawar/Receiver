@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {  isAdmin } from "../middleware/adminMiddleware.js";
-import { registerUser, loginUser, GoogleLogin, changeMode } from "../controllers/AuthController.js";
+import { registerUser, loginUser, GoogleLogin, changeMode, checkRole } from "../controllers/AuthController.js";
 import { jwtAuth } from "../middleware/jwtAuth.js";
 
 const router=Router();
@@ -27,5 +27,7 @@ router.get("/check-auth", jwtAuth, (req, res) => {
   res.status(200).json({ isAuthenticated: true, user: req.user,currentRole:req.user.currentRole });
 });
 router.get("/changeMode", jwtAuth,changeMode)
+router.get("/checkRole", jwtAuth, checkRole)
 
-export default router;  
+export default router;
+  

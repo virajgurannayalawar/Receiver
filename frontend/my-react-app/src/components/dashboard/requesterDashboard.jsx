@@ -1,11 +1,5 @@
-//
-
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { io } from "socket.io-client";
-
-
-
 import { useSelector, useDispatch } from "react-redux";
 
 // Redux Actions
@@ -15,22 +9,19 @@ import { suspect } from "../../redux/checkSuspect.js";
 import { setLocation, setError } from "../../redux/location.js";
 import { setRole } from "../../redux/role.js";
 
-
 // Dashboard Pages
 import ReqPickup from "./reqPickup.jsx";
 import ReqPrint from "./reqPrint.jsx"; // Adjusted to correct path
 import ReqShop from "./reqShop.jsx";   // Adjusted to correct path
 
-export default function Receiver() {
-  const [loading, setLoading] = useState(true);
-  const [pickupdata, setpickupdata] = useState(null);
+export default function Dashboard() {
+
   const [activePage, setActivepage] = useState("Home");
   const [showPopup, setShowPopup] = useState(false); // Default to false until an error occurs
 
   const locationState = useSelector((state) => state.location.value);
   const dispatch = useDispatch();
 
-  const socket = io("http://localhost:5000");
 
   // Handle Geolocation
   useEffect(() => {
@@ -78,19 +69,6 @@ export default function Receiver() {
     );
   }, [dispatch]);
 
-    useEffect(() => {
-    socket.on("newPickup", (request) => {
-
-        console.log(request);
-        setpickupdata(request)
-
-    });
-
-    return () => {
-        socket.off("newPickup");
-    };
-
-}, []);
   // Logout Action
   const logoutUser = async () => {
     try {
@@ -128,14 +106,14 @@ export default function Receiver() {
   const changeMode = async () => {
 
     try {
-      const response = await axios.get(
+       const response=await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}auth/changeMode`
       );
       if (response.data.currentRole) {
-        dispatch(setRole(response.data.currentRole));
+      dispatch(setRole(response.data.currentRole));
       }
     } catch (err) {
-      console.log("error changing mode", err)
+console.log("error changing mode",err)
     }
   }
 
@@ -149,74 +127,31 @@ export default function Receiver() {
   return (
     <>
       <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-        <header className="flex justify-between items-center p-4 bg-white shadow-sm">
-          <h1 className="text-xl font-bold tracking-tight">Home Page</h1>
-          <h1 className="text-xl font-bold tracking-tight">receiver</h1>
-          <button
-            onClick={logoutUser}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
-          >
-            Logout
-          </button>
-          <button
-            onClick={changeMode}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
-          >
-            change mode
-          </button>
-        </header>
-
+       
         <main className="grow flex flex-col justify-center items-center p-6 gap-6 max-w-md mx-auto w-full">
-           
-        
-          
-<div className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between">
-  <div className="flex flex-col">
-    <span className="text-[11px] text-gray-400 uppercase tracking-wide">
-      Vendor
-    </span>
-    <span className="text-base font-semibold text-gray-900">
-      ABC Electronics
-    </span>
-  </div>
+          <div
+            onClick={() => setActivepage("ReqPickup")}
+            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+          >
+            Request a pickup at gate
+          </div>
 
-  <div className="flex flex-col items-center">
-    <span className="text-[11px] text-gray-400 uppercase tracking-wide">
-      Deliver To
-    </span>
-    <span className="px-3 py-1 mt-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">
-      Block B
-    </span>
-  </div>
+          <div
+            onClick={() => setActivepage("ReqPrint")}
+            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+          >
+            Order prints
+          </div>
 
-  <div className="flex flex-col items-end">
-    <span className="text-[11px] text-gray-400 uppercase tracking-wide">
-      ETA
-    </span> 
-    <span className="mt-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-      12 min
-    </span>
-  </div>
-</div>
-         
+          <div
+            onClick={() => setActivepage("ReqShop")}
+            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+          >
+            Order items from nearby shops
+          </div>
         </main>
 
-        <footer className="bg-white border-t border-gray-200 shadow-lg py-4">
-          <div className="flex justify-around items-center max-w-md mx-auto">
-            <div className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Dashboard
-            </div>
-            <div className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Active Requests
-            </div>
-            <div className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Profile
-            </div>
-            <div className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              History
-            </div>
-          </div>
-        </footer>
+        
       </div>
 
       {/* Dynamic Error Popup */}

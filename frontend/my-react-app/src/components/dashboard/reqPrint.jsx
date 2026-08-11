@@ -322,7 +322,7 @@ export default function ReqPickup() {
 
     const savePickupReq = async () => {
         try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/request/pickup`, {
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/pickup/newRequest`, {
                 token: authentication.token,
                 vendor: formData.vendor,
                 delivery_partner: formData.delivery_partner,

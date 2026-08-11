@@ -5,6 +5,11 @@ import authenticationReducer  from './authentication.js'
 import  deviceFingerPrintReducer  from './deviceFingerPrint.js'
 import  locationReducer  from './location.js'
 import  roleReducer  from './role.js'
+import  pickupReqsReducer  from './pickupReq.js'
+import  requesterRequestedReducer  from './requesterRequested.js'
+import  receiverAcceptedReducer  from './receiverAccepted.js'
+import receiverTabReducer from "./receiverTab.js"
+import requesterTabReducer from "./requesterTab.js"
  
 
 export default configureStore({
@@ -14,7 +19,12 @@ export default configureStore({
            authentication:authenticationReducer,
            deviceFingerPrint:deviceFingerPrintReducer,
            location:locationReducer,
-           role:roleReducer
+           role:roleReducer,
+           pickupReqs:pickupReqsReducer,
+           requesterRequested:requesterRequestedReducer,
+           receiverAccepted:receiverAcceptedReducer, 
+           receiverTab:receiverTabReducer,
+           requesterTab:requesterTabReducer
 
 
  }

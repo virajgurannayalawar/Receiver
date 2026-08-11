@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const PickUp  = new mongoose.Schema({
-  client_id: {
+  requester_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -32,6 +32,16 @@ const PickUp  = new mongoose.Schema({
     item_name: {
       type: String,
       required: [true, 'item  name is required'],
+      trim: true
+    },
+        item_weight: {
+      type: Number,
+      required: [true, 'item  weight is required'],
+      trim: true
+    },
+        arrival_time: {
+      type: Number,
+      required: [true, 'arrival time  is required'],
       trim: true
     },
     block: {

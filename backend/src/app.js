@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 import ConnectDB from "./config/db.js";
 import authroutes from "./routes/authroutes.js"
 import uploadroutes from "./routes/uploadroutes.js"
-import orderRoutes from "./routes/orderRoutes.js"
+import pickupRoutes from "./routes/pickupRoutes.js"
 import banCheckMiddleware from "./middleware/banCheckMiddleware.js";
 dotenv.config();
 
@@ -17,7 +17,7 @@ const app = express();
 const server=http.createServer(app)
 const io=new Server(server,{
   cors: {
-    origin: "http://localhost:5173",
+    origin: true,
     credentials: true,
   }
 })
@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
 app.set("io",io)
 app.use(cors(
     {
-        origin:"http://localhost:5173",
+        origin: true,
         credentials:true
     }
 ));
@@ -50,10 +50,8 @@ app.get("/",(req,res)=>{
 
 app.use('/auth',authroutes)
 app.use('/upload-signature',uploadroutes)
+app.use('/pickup',pickupRoutes)
 
-
-
-app.use('/request',orderRoutes)
 
 
 server.listen(process.env.PORT,()=>{
