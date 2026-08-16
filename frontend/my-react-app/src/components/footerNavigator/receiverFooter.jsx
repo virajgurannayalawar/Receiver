@@ -19,27 +19,22 @@ export default function Footer() {
   
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-     
-
-        <footer className="bg-white border-t border-gray-200 shadow-lg py-4">
-          <div className="flex justify-around items-center max-w-md mx-auto">
-            <div onClick={()=>dispatch(setReceiverTab("dashboard"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Dashboard
-            </div>
-            <div onClick={()=>dispatch(setReceiverTab("active"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Active  
-            </div>
-            <div onClick={()=>dispatch(setReceiverTab("profile"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              Profile
-            </div>
-            <div onClick={()=>dispatch(setReceiverTab("history"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
-              History
-            </div>
+      <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg py-4">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          <div onClick={()=>dispatch(setReceiverTab("dashboard"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
+            Dashboard
           </div>
-        </footer>
-      </div>
-
+          <div onClick={()=>dispatch(setReceiverTab("active"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
+            Active  
+          </div>
+          <div onClick={()=>dispatch(setReceiverTab("profile"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
+            Profile
+          </div>
+          <div onClick={()=>dispatch(setReceiverTab("history"))} className="text-sm font-semibold text-gray-600 hover:text-blue-500 cursor-pointer transition">
+            History
+          </div>
+        </div>
+      </footer>
     </>
   );
 }

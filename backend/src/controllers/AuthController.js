@@ -12,14 +12,14 @@ import { auth } from "../config/firebaseAdmin.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { phone, email, password, name, google, security,roles } = req.body
-    let profile_picture = req.body.profile_picture; 
+    const { phone, email, password, name, google, security, roles } = req.body
+    let profile_picture = req.body.profile_picture;
     if (!phone || !email || !password) {
       return res.status(400).json({ message: "Phone, email, and password are required" });
-    } 
+    }
 
     const user = await User.findOne({ email });
-    console.log("Existing user found in DB:", user); 
+    console.log("Existing user found in DB:", user);
 
     if (user) {
       return res.status(400).json({ message: "User already exists" });
@@ -30,16 +30,16 @@ export const registerUser = async (req, res) => {
     if (security.face_verification.is_registered == false) {
       return res.status(400).json({ message: "Face verification is required" });
     }
-    
+
     if (google) {
-     profile_picture = google.profile
+      profile_picture = google.profile
     }
 
     if (!password || password.length < 8) {
       return res.status(400).json({ error: "Password must be at least 8 characters." });
     }
-  
-    
+
+
 
     // 1. CRYPTOGRAPHICALLY VERIFY THE OTP TOKEN VIA FIREBASE ADMIN SDK. This safely decodes the token using Google's cached public keys
     const decodedFirebaseToken = await auth.verifyIdToken(security.firebase_id_token);
@@ -58,18 +58,18 @@ export const registerUser = async (req, res) => {
 
 
 
-  // encrypting the password
+    // encrypting the password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
 
-  // checking if the face is already registered
+    // checking if the face is already registered
     const is_face_registered = await User.findOne({ "security.face_verification.biometric_template_id": security.face_verification.biometric_template_id })
     if (is_face_registered) {
       return res.status(400).json({ message: "Face already registered with another account" });
     }
 
     delete security.firebase_id_token
-    
+
     const newUser = new User({
       phone,
       email,
@@ -87,11 +87,11 @@ export const registerUser = async (req, res) => {
 
     await newUser.save();
     res.status(201).cookie("token", token, {
-        httpOnly: true,
-        secure: false,  
-        sameSite: "strict", // prevents CSRF
-        maxAge: 7*24 * 60 * 60 * 1000,  
-      })
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax", // allows cross-origin over HTTP local IP
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
       .json({ message: "User registered successfully" });
   } catch (error) {
     console.log(error);
@@ -100,46 +100,46 @@ export const registerUser = async (req, res) => {
 }
 
 export const loginUser = async (req, res) => {
-  
-  const { email, password,security ,phone} = req.body
-  if(!req.suspected_device){
-    try {
-    
-    
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const isPassword = await bcrypt.compare(password, user.password)
-    if (!isPassword) {
-      return res.status(401).json({ message: "Invalid password" });
-    }
-    const token = generateToken(user)
-    user.token_version = user.token_version + 1
-    await user.save()
 
-    return res.status(200).cookie("token", token, {
+  const { email, password, security, phone } = req.body
+  if (!req.suspected_device) {
+    try {
+
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const isPassword = await bcrypt.compare(password, user.password)
+      if (!isPassword) {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+      const token = generateToken(user)
+      user.token_version = user.token_version + 1
+      await user.save()
+
+      return res.status(200).cookie("token", token, {
         httpOnly: true,
-        secure: false,  
-        sameSite: "strict", // prevents CSRF
-        maxAge: 7*24 * 60 * 60 * 1000,  
+        secure: false,
+        sameSite: "lax", // allows cross-origin over HTTP local IP
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       }).json({
-      message: "User logged in successfully"
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
+        message: "User logged in successfully"
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
 
   }
 
   try {
-    
-    
-    if (!email || !password ) {
+
+
+    if (!email || !password) {
       return res.status(400).json({ message: "Email and password and  are required" });
     }
     const user = await User.findOne({ email });
@@ -150,7 +150,7 @@ export const loginUser = async (req, res) => {
     if (!isPassword) {
       return res.status(401).json({ message: "Invalid password" });
     }
-    if(user.security.face_verification.biometric_template_id !== security.face_verification.biometric_template_id){
+    if (user.security.face_verification.biometric_template_id !== security.face_verification.biometric_template_id) {
       return res.status(400).json({ message: "Face mismatch" });
     }
 
@@ -162,64 +162,64 @@ export const loginUser = async (req, res) => {
     const verifiedPhoneNumber = decodedFirebaseToken.phone_number;
 
     // 3. Cross-verify frontend phone string matches Firebase's carrier network data
-    if (phone !== verifiedPhoneNumber ) {
+    if (phone !== verifiedPhoneNumber) {
       return res.status(400).json({
         error: "Security Mismatch: Submitted mobile number does not match the verified SMS device."
       });
     }
-    if(phone !== user.phone){ return res.status(400).json({
+    if (phone !== user.phone) {
+      return res.status(400).json({
         error: "Security Mismatch: Submitted mobile number does not match with the user"
-      });}
+      });
+    }
 
     const token = generateToken(user)
     user.token_version = user.token_version + 1
     await user.save()
 
     res.status(200).cookie("token", token, {
-        httpOnly: true,
-        secure: false,  
-        sameSite: "strict", // prevents CSRF
-        maxAge: 7*24 * 60 * 60 * 1000,  
-      }).json({
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax", // allows cross-origin over HTTP local IP
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }).json({
       message: "User logged in successfully"
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-  
+
 }
 
 
 
 export const GoogleLogin = async (req, res) => {
   try {
-    const {google,security,device_fingerprint} = req.body
+    const { google, security, device_fingerprint } = req.body
     const user = await User.findOne({ "google.id": google.id });
     if (!user) {
-     return res.send({ message: "register user" })
-    } 
-    if(req.suspected_device)
-    {
+      return res.send({ message: "register user" })
+    }
+    if (req.suspected_device) {
       const is_face_registered = await User.findOne({ "security.face_verification.biometric_template_id": security.face_verification.biometric_template_id })
-      if(!is_face_registered)
-      {
+      if (!is_face_registered) {
         return res.status(400).json({ message: "Face not registered with this user,try again face verification" });
       }
-      
+
       await BannedDevice.updateOne({ $pull: { suspected_devices: device_fingerprint } })
     }
     const token = generateToken(user)
     user.token_version = user.token_version + 1
     await user.save()
     res.status(200).cookie("token", token, {
-        httpOnly: true,
-        secure: false,  
-        sameSite: "strict", // prevents CSRF
-        maxAge: 7*24 * 60 * 60 * 1000,  
-      }).json({
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax", // allows cross-origin over HTTP local IP
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }).json({
       message: "User logged in successfully",
-     
+
     });
 
   } catch (error) {
@@ -231,26 +231,25 @@ export const GoogleLogin = async (req, res) => {
 
 }
 
-export  const changeMode =async(req,res)=>{
+export const changeMode = async (req, res) => {
 
-try{
-  const user=await User.findById(req.user.id)
-  if(user.roles.includes("receiver"))
-  {
-    if(user.currentRole=="receiver"){
-       await User.updateOne({_id:user.id},{$set:{currentRole:"requester"}})
-      
-       return res.status(200).json({ message:"mode changed successfully",currentRole:"requester" });
-      }else{
-       await User.updateOne({_id:user.id},{$set:{currentRole:"receiver"}})
-         return res.status(200).json({ message:"mode changed successfully",currentRole:"receiver" });
+  try {
+    const user = await User.findById(req.user.id)
+    if (user.roles.includes("receiver")) {
+      if (user.currentRole == "receiver") {
+        await User.updateOne({ _id: user.id }, { $set: { currentRole: "requester" } })
+
+        return res.status(200).json({ message: "mode changed successfully", currentRole: "requester" });
+      } else {
+        await User.updateOne({ _id: user.id }, { $set: { currentRole: "receiver" } })
+        return res.status(200).json({ message: "mode changed successfully", currentRole: "receiver" });
       }
-     
-  }else {
-      return res.status(401).json({ message:"receiver mode not enabled" });
 
-  }
-}catch(err){}
+    } else {
+      return res.status(401).json({ message: "receiver mode not enabled" });
+
+    }
+  } catch (err) { }
 
 
 }
@@ -269,4 +268,4 @@ export const checkRole = async (req, res) => {
 };
 
 
- 
+

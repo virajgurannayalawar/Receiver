@@ -32,7 +32,7 @@ export const pickup = async (req, res) => {
 
         // 5. Create Pickup Request Record in MongoDB
         const newPickup = await PickUp.create({
-  client_id: user.id,
+  requester_id: user.id,
   details: {
     vendor,
     delivery_partner,

@@ -67,24 +67,22 @@ export default function Navbar() {
 
   return (
 
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800"> 
-        <header className="flex justify-between items-center p-4 bg-white shadow-sm">
-          <h1 className="text-xl font-bold tracking-tight">Home Page</h1>
-          <h1 className="text-xl font-bold tracking-tight">receiver</h1>
-          <button
-            onClick={logoutUser}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
-          >
-            Logout
-          </button>
-          <button
-            onClick={changeMode}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
-          >
-            change mode
-          </button>
-        </header>
-        </div>
+    <header className="flex justify-between items-center p-4 bg-white shadow-sm">
+      <h1 className="text-xl font-bold tracking-tight">Home Page</h1>
+      <h1 className="text-xl font-bold tracking-tight">receiver</h1>
+      <button
+        onClick={logoutUser}
+        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
+      >
+        Logout
+      </button>
+      <button
+        onClick={changeMode}
+        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition duration-200 cursor-pointer"
+      >
+        change mode
+      </button>
+    </header>
      
   );
 }

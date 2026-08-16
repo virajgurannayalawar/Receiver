@@ -169,28 +169,16 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-        
-
-        <main className="grow flex flex-col justify-center items-center p-6 gap-6 max-w-md mx-auto w-full">
-
-
-
-          <div className="w-full space-y-4">
-            {pickupReqs.length === 0 ? (
-              <p className="text-center text-gray-500">
-                No pickup requests available.
-              </p>
-            ) : (
-              (pickupReqs || []).map((pickup) => (
-                <LiveReq key={pickup._id} pickup={pickup}/> 
-              ))
-            )}
-          </div>
-
-        </main>
-
-       
+      <div className="w-full space-y-4">
+        {pickupReqs.length === 0 ? (
+          <p className="text-center text-gray-500">
+            No pickup requests available.
+          </p>
+        ) : (
+          (pickupReqs || []).map((pickup) => (
+            <LiveReq key={pickup._id} pickup={pickup}/> 
+          ))
+        )}
       </div>
 
       {/* Dynamic Error Popup */}

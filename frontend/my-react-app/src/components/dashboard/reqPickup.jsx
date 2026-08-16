@@ -4,11 +4,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ban } from "../../redux/banCheck.js";
 import { suspect, unSuspect } from "../../redux/checkSuspect.js"
 import { setIsAuthenticated } from "../../redux/authentication.js";
-
-
-
-
-
+import { setRequesterRequested } from "../../redux/requesterRequested.js"
+import {setRequesterTab} from "../../redux/requesterTab.js"
 
 const getBrandIcon = (name) => {
 
@@ -65,7 +62,7 @@ function UploadWidget({ setFormData }) {
             data.append("api_key", apiKey);
 
 
-            const res = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, data,{withCredentials:false});
+            const res = await axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, data, { withCredentials: false });
 
 
             setFormData(prev => ({ ...prev, screenshot_url: res.data.secure_url }));
@@ -321,12 +318,14 @@ export default function ReqPickup() {
         vendor: "",
         delivery_partner: "",
         item_name: "",
+        item_weight:'',
+        arrival_time: '',
         block: "",
         floor: "",
         room: "",
         screenshot_url: "",
-        item_weight:"",
-        arrival_time:""
+        item_weight: "",
+        arrival_time: ""
     });
 
     const deviceFingerPrint = useSelector(state => state.deviceFingerPrint.value);
@@ -342,13 +341,13 @@ export default function ReqPickup() {
 
     const savePickupReq = async () => {
         try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}request/pickup`, {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}pickup/newRequest/`, {
                 token: authentication.token,
                 vendor: formData.vendor,
                 delivery_partner: formData.delivery_partner,
                 item_name: formData.item_name,
-                item_weight:"",
-                arrival_time:"",
+                item_weight: formData.item_weight,
+                arrival_time: formData.arrival_time,
                 block: formData.block,
                 floor: formData.floor,
                 room: formData.room,
@@ -359,10 +358,16 @@ export default function ReqPickup() {
                 },
                 currentLocation: {
                     type: 'Point',
-                    coordinates: [location.longitude,location.latitude]
+                    coordinates: [location.longitude, location.latitude]
                 },
                 role: "client"
             });
+            if (response.data) {
+                dispatch(setRequesterRequested(true))
+                dispatch(setRequesterTab("active"))
+
+            }
+
         } catch (error) {
             const serverMessage = error.response?.data?.message;
 
@@ -389,6 +394,6 @@ export default function ReqPickup() {
     };
     return (<div >
         {currentStep === 'FORM' && (<Form onNext={() => setCurrentStep('SUCCESS')} setFormData={setFormData} formData={formData} />)}
-        {currentStep === 'SUCCESS' && (<div>success </div>)}
+
     </div>);
 }

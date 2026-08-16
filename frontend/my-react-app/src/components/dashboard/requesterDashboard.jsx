@@ -126,32 +126,27 @@ console.log("error changing mode",err)
 
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-       
-        <main className="grow flex flex-col justify-center items-center p-6 gap-6 max-w-md mx-auto w-full">
-          <div
-            onClick={() => setActivepage("ReqPickup")}
-            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
-          >
-            Request a pickup at gate
-          </div>
+      <div className="w-full space-y-6">
+        <div
+          onClick={() => setActivepage("ReqPickup")}
+          className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+        >
+          Request a pickup at gate
+        </div>
 
-          <div
-            onClick={() => setActivepage("ReqPrint")}
-            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
-          >
-            Order prints
-          </div>
+        <div
+          onClick={() => setActivepage("ReqPrint")}
+          className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+        >
+          Order prints
+        </div>
 
-          <div
-            onClick={() => setActivepage("ReqShop")}
-            className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
-          >
-            Order items from nearby shops
-          </div>
-        </main>
-
-        
+        <div
+          onClick={() => setActivepage("ReqShop")}
+          className="w-full flex items-center justify-center bg-amber-400 hover:bg-amber-500 transition duration-200 cursor-pointer p-6 rounded-2xl shadow-md text-center font-bold text-lg text-amber-950"
+        >
+          Order items from nearby shops
+        </div>
       </div>
 
       {/* Dynamic Error Popup */}

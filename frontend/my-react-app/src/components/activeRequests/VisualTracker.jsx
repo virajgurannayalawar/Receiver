@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
-export default function DummyStepper({
-  currentStatus = "Picked Up",
+export default function VisualTracker({
+  currentStatus = "PENDING",
   timestamps = {},
   isEmbedded = false,
 }) {
@@ -177,9 +177,16 @@ export default function DummyStepper({
     },
   ];
 
+  const formatStatus = (s) => {
+    if (!s) return "";
+    const u = s.toUpperCase();
+    if (u === "COMPLETED") return "DELIVERED";
+    if (u === "PICKED") return "PICKED_UP";
+    return u;
+  };
   const statusOrder = ["PENDING", "ACCEPTED", "PICKED_UP", "ARRIVED", "DELIVERED"];
-  const currentStepIndex = statusOrder.indexOf(currentStatus?.toUpperCase());
-  const activeIndex = currentStepIndex !== -1 ? currentStepIndex : 2;
+  const currentStepIndex = statusOrder.indexOf(formatStatus(currentStatus));
+  const activeIndex = currentStepIndex !== -1 ? currentStepIndex : 0;
 
   // Fully Transparent Vertical Visual Stepper Content Container
   const stepperCard = (
@@ -264,7 +271,7 @@ export default function DummyStepper({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-blue-50 flex flex-col items-center justify-center p-6 text-center relative select-none overflow-hidden">
+    <div className="select-none">
        
       {!isOpen ? (
         /* Transparent Draggable Floating Icon Button (Mouse & Touch supported) */

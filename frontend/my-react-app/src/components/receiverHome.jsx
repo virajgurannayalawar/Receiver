@@ -13,7 +13,7 @@ import { setRequesterRequested } from "../redux/requesterRequested.js";
 import Navbar from "./navbar/receivernavbar.jsx";
 import Footer from "./footerNavigator/receiverFooter.jsx"
 import Dashboard from "./dashboard/receiverDasboard.jsx"
-import Active from "./activeRequests/ReceiverActiveReq.jsx";
+import Active from "./activeRequests/ReceiverActiveReqList.jsx";
 import History from "./history/receiverHistory.jsx";
 import Profile from "./profile/profile.jsx";
 
@@ -28,7 +28,7 @@ export default function ReceiverHome() {
 
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
       <Navbar/>
-      <main className="grow flex flex-col justify-center items-center p-6 gap-6 max-w-md mx-auto w-full">
+      <main className="grow flex flex-col items-center p-6 pb-20 gap-6 max-w-md mx-auto w-full">
 
          
         {tab === "dashboard" && (<Dashboard />)}

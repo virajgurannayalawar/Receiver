@@ -27,25 +27,8 @@ export default function History() {
    
 
   return (
-
-   <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-        
- 
-        <main className="grow flex flex-col justify-center items-center p-6 gap-6 max-w-md mx-auto w-full">
-
-
-
-          <div className="w-full space-y-4">
-            
-              hi i am history
-           
-          </div>
-
-        </main>
-
-   
-          
-        
-      </div>
+    <div className="w-full space-y-4">
+      hi i am history
+    </div>
   );
 }
