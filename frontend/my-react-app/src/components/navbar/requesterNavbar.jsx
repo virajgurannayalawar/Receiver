@@ -72,7 +72,7 @@ export default function Navbar() {
 
   return (
 
-   <header className="flex justify-between items-center p-4 bg-white shadow-sm">
+   <header className="sticky top-0 z-40 flex justify-between items-center px-4 h-16 bg-white shadow-sm shrink-0">
      <h1 className="text-xl font-bold tracking-tight">Home Page</h1>
      <h1 className="text-xl font-bold tracking-tight">requester</h1>
      <button

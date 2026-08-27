@@ -25,7 +25,7 @@ export default async function banCheckMiddleware(req, res, next) {
         }
         
     } catch (error) {
-        console.log(error);
+        console.error("Error in banCheckMiddleware:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 }

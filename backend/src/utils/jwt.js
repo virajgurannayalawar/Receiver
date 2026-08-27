@@ -17,7 +17,7 @@ export const verifyToken =async(token)=>{
   try {
     return jwt.verify(token,process.env.JWT_SECRET);
   } catch (error) {
-    console.log(error);
+    console.error("Error verifying JWT token:", error);
     return null;
   }
 }

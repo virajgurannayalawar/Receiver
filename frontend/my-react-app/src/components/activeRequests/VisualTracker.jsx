@@ -38,7 +38,7 @@ export default function VisualTracker({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Click / Touch Outside Listener: Restores floating icon when clicking outside stepper
+  // Click  Touch Outside Listener: Restores floating icon when clicking outside stepper
   useEffect(() => {
     const handleOutsideInteraction = (event) => {
       if (

@@ -21,6 +21,7 @@ export const jwtAuth = async (req, res, next) => {
 
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
+      console.error("Token expired error in jwtAuth:", error);
       res.clearCookie("token", {
         httpOnly: true,
         secure: false,
@@ -28,7 +29,7 @@ export const jwtAuth = async (req, res, next) => {
       });
       return res.status(401).json({ message: "session expired" });
     } else {
-      console.log("❌ Invalid token signature or malformed token.", error);
+      console.error("❌ Invalid token signature or malformed token in jwtAuth:", error);
       return res.status(401).json({ message: "session expired" });
     }
   }

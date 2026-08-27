@@ -94,7 +94,7 @@ export const registerUser = async (req, res) => {
     })
       .json({ message: "User registered successfully" });
   } catch (error) {
-    console.log(error);
+    console.error("Error in registerUser:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
@@ -130,7 +130,7 @@ export const loginUser = async (req, res) => {
         message: "User logged in successfully"
       });
     } catch (error) {
-      console.log(error);
+      console.error("Error in loginUser (unsuspected flow):", error);
       return res.status(500).json({ message: "Internal server error" });
     }
 
@@ -186,7 +186,7 @@ export const loginUser = async (req, res) => {
       message: "User logged in successfully"
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in loginUser (suspected flow):", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 
@@ -223,7 +223,7 @@ export const GoogleLogin = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error("Error in GoogleLogin:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 
@@ -249,7 +249,10 @@ export const changeMode = async (req, res) => {
       return res.status(401).json({ message: "receiver mode not enabled" });
 
     }
-  } catch (err) { }
+  } catch (err) {
+    console.error("Error in changeMode:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 
 
 }

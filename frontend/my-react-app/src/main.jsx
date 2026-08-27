@@ -4,15 +4,20 @@ import App from './App.jsx'
 import store from './redux/store.js'
 import { Provider } from 'react-redux'
 import './main.css'
-import DummyStepper from './components/dummy.jsx'
-import Dummy from './components/dummy2.jsx'
+ 
+import MapComponent from './components/map.jsx'
+import BottomUp from './components/bottomUp.jsx'
 
 const development = false
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
    <Provider store={store}>
-     {!development ? ( <App />) : ( <DummyStepper /> )}
+     {!development ? ( <App />) : ( 
+       <>
+         <BottomUp />
+       </>
+     )}
     </Provider>
   </StrictMode>,
 )

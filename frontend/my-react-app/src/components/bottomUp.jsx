@@ -1,26 +1,27 @@
-import React, { useState } from "react";
-import MapComponent from "./map.jsx";
-import ParcelDetails from "./parcelDetails.jsx";
-import PickedDetails from "./pickedDetails.jsx";
-import ArrivedDetails from "./arrivedDetails.jsx";
-import DeliveredDetails from "./deliveredDetails.jsx";
+import React, { useState } from 'react';
 
-export default function ReceiverTask({ task, onBack }) {
+const BottomUp = () => {
+
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState(1);
 
+ 
   const handleNonPopupAreaClick = () => {
     setIsExpanded(false);
   };
+
 
   const handlePopupContentClick = (e) => {
     e.stopPropagation();
   };
 
+
   const handleTabClick = (tabNum, e) => {
     e.stopPropagation();
     setActiveTab(tabNum);
+    alert(`Tab ${tabNum}`);
   };
+
 
   const tabs = [
     {
@@ -42,32 +43,29 @@ export default function ReceiverTask({ task, onBack }) {
   ];
 
   return (
-    <div className="fixed top-16 inset-x-0 bottom-0 z-30 flex flex-col justify-end overflow-hidden">
-      {/* Map rendered in background */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <MapComponent />
-      </div>
+    <div className="fixed top-16 inset-x-0 bottom-0 z-30 flex flex-col justify-end overflow-hidden pointer-events-none">
 
-      {/* Backdrop overlay */}
       <div 
         onClick={handleNonPopupAreaClick}
         className={`fixed top-16 inset-x-0 bottom-0 pointer-events-auto transition-opacity duration-300 cursor-pointer ${
-          isExpanded ? 'bg-black/30 backdrop-blur-[1px]' : 'bg-transparent pointer-events-none'
+          isExpanded ? 'bg-black/30 backdrop-blur-[1px]' : 'bg-transparent'
         }`}
       />
 
-      {/* Bottom Sheet Drawer */}
+
       <div 
         onClick={handlePopupContentClick}
         style={{ height: isExpanded ? '70vh' : '20vh' }}
         className="relative z-10 w-full bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 pointer-events-auto transition-all duration-300 ease-in-out flex flex-col overflow-hidden select-none"
       >
+
         <div 
           onClick={() => setIsExpanded((prev) => !prev)}
           className="w-full py-3 flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-100 shrink-0"
         >
           <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
         </div>
+
 
         <div className="w-full bg-white border-b border-gray-200 px-2 py-2 flex items-center justify-around shrink-0 z-20 shadow-sm">
           {tabs.map((tab) => (
@@ -86,12 +84,14 @@ export default function ReceiverTask({ task, onBack }) {
         </div>
 
         <div className="p-5 flex-1 overflow-y-auto">
-          {activeTab === 1 && <ParcelDetails task={task} onBack={onBack} />}
-          {activeTab === 2 && <PickedDetails task={task} onBack={onBack} />}
-          {activeTab === 3 && <ArrivedDetails task={task} onBack={onBack} />}
-          {activeTab === 4 && <DeliveredDetails task={task} onBack={onBack} />}
+          {activeTab==1 &&(<><ParcelDetails/></>)}
+          {activeTab==2 &&(<><PickedDetails/></>)}
+          {activeTab==3 &&(<><ArrivedDetails/></>)}
+          {activeTab==4 &&(<><DeliveredDetails/></>)}
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default BottomUp;
