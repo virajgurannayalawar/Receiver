@@ -1,6 +1,7 @@
 import React from "react";
+import ConfirmSlider from "./ConfirmSlider.jsx";
 
-export default function ArrivedDetails({ task, onBack }) {
+export default function ArrivedDetails({ task, onBack, onConfirmArrived }) {
   if (!task) {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -8,7 +9,7 @@ export default function ArrivedDetails({ task, onBack }) {
         {onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
           >
             Go Back
           </button>
@@ -18,6 +19,12 @@ export default function ArrivedDetails({ task, onBack }) {
   }
 
   const { details, requester_id } = task;
+
+  const handleConfirmArrived = async () => {
+    if (onConfirmArrived) {
+      await onConfirmArrived(task);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto space-y-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -47,6 +54,14 @@ export default function ArrivedDetails({ task, onBack }) {
           Contact {requester_id?.name || "Requester"} to hand over the parcel.
         </p>
       </div>
+
+      {/* Slide to Confirm Arrived Slider */}
+      <ConfirmSlider
+        text="Slide right to confirm Arrived >>"
+        onConfirm={handleConfirmArrived}
+        trackBgClass="bg-blue-400"
+        knobBgClass="bg-blue-600 hover:bg-blue-700"
+      />
 
       {requester_id?.phone && (
         <a

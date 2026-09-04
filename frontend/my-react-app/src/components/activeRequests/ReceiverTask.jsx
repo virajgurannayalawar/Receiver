@@ -58,7 +58,7 @@ export default function ReceiverTask({ task, onBack }) {
 
       {/* Map rendered in background */}
       <div className="absolute inset-0 z-0 pointer-events-auto">
-        <MapComponent />
+        <MapComponent task={task} />
       </div>
 
       {/* Backdrop overlay */}
@@ -98,8 +98,8 @@ export default function ReceiverTask({ task, onBack }) {
 
         <div className="p-5 flex-1 overflow-y-auto">
           {activeTab === 1 && <ParcelDetails task={task} onBack={onBack} />}
-          {activeTab === 2 && <PickedDetails task={task} onBack={onBack} />}
-          {activeTab === 3 && <ArrivedDetails task={task} onBack={onBack} />}
+          {activeTab === 2 && <PickedDetails task={task} onBack={onBack} onConfirmPicked={() => setActiveTab(3)} />}
+          {activeTab === 3 && <ArrivedDetails task={task} onBack={onBack} onConfirmArrived={() => setActiveTab(4)} />}
           {activeTab === 4 && <DeliveredDetails task={task} onBack={onBack} />}
         </div>
       </div>

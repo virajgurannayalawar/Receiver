@@ -1,6 +1,7 @@
 import React from "react";
+import ConfirmSlider from "./ConfirmSlider.jsx";
 
-export default function DeliveredDetails({ task, onBack }) {
+export default function DeliveredDetails({ task, onBack, onConfirmDelivered }) {
   if (!task) {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -8,7 +9,7 @@ export default function DeliveredDetails({ task, onBack }) {
         {onBack && (
           <button
             onClick={onBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
           >
             Go Back
           </button>
@@ -18,6 +19,12 @@ export default function DeliveredDetails({ task, onBack }) {
   }
 
   const { details } = task;
+
+  const handleConfirmDelivered = async () => {
+    if (onConfirmDelivered) {
+      await onConfirmDelivered(task);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto space-y-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -41,6 +48,14 @@ export default function DeliveredDetails({ task, onBack }) {
           Package successfully handed over for item: <span className="font-semibold text-gray-700">{details?.item_name || "Package"}</span>
         </p>
       </div>
+
+      {/* Slide to Confirm Delivered Slider */}
+      <ConfirmSlider
+        text="Slide right to confirm Delivered >>"
+        onConfirm={handleConfirmDelivered}
+        trackBgClass="bg-emerald-400"
+        knobBgClass="bg-emerald-600 hover:bg-emerald-700"
+      />
 
       {onBack && (
         <button
