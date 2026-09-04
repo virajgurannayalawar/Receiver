@@ -297,7 +297,41 @@ const RecenterMap = ({ location }) => {
   return null;
 };
 
-const MapComponent = () => {
+// Calculate Great Circle / Haversine distance in meters between two [lat, lng] points
+const getHaversineDistanceMeters = (p1, p2) => {
+  if (!p1 || !p2) return 0;
+  const R = 6371000; // Earth radius in meters
+  const dLat = (p2[0] - p1[0]) * (Math.PI / 180);
+  const dLng = (p2[1] - p1[1]) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(p1[0] * (Math.PI / 180)) *
+      Math.cos(p2[0] * (Math.PI / 180)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Requester Custom Pin Icon
+const createRequesterIcon = () => {
+  return L.divIcon({
+    className: "custom-requester-icon",
+    html: `
+      <div style="background-color: #EF4444; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #ffffff; box-shadow: 0px 4px 10px rgba(239,68,68,0.5); color: #ffffff;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -36],
+  });
+};
+
+const MapComponent = ({ task = null, receiverLocation = null, requesterLocation = null }) => {
   const defaultInitialPos = [12.909477, 77.566833];
 
   const [userLocation, setUserLocation] = useState(defaultInitialPos);
@@ -313,6 +347,47 @@ const MapComponent = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isSecureOrigin, setIsSecureOrigin] = useState(true);
+
+  // Distance & Duration state from OSRM
+  const [shortestDistance, setShortestDistance] = useState(null);
+  const [estimatedDuration, setEstimatedDuration] = useState(null);
+  const [targetRequesterPos, setTargetRequesterPos] = useState(null);
+
+  // Derive Requester Location from task or props
+  useEffect(() => {
+    if (requesterLocation && Array.isArray(requesterLocation) && requesterLocation.length === 2) {
+      setTargetRequesterPos(requesterLocation);
+      setDestination(requesterLocation);
+      return;
+    }
+
+    if (task) {
+      // 1. Check if task details has explicit currentLocation coordinates [lng, lat]
+      const coords = task?.details?.currentLocation?.coordinates;
+      if (Array.isArray(coords) && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0)) {
+        const latLng = [coords[1], coords[0]];
+        setTargetRequesterPos(latLng);
+        setDestination(latLng);
+        return;
+      }
+
+      // 2. Check if task details has a block matching CAMPUS_LANDMARKS
+      const blockName = task?.details?.block;
+      if (blockName) {
+        const matched = CAMPUS_LANDMARKS.find(
+          (lm) =>
+            lm.name.toLowerCase().includes(blockName.toLowerCase()) ||
+            lm.id.toLowerCase().includes(blockName.toLowerCase()) ||
+            blockName.toLowerCase().includes(lm.name.toLowerCase())
+        );
+        if (matched) {
+          setTargetRequesterPos(matched.coords);
+          setDestination(matched.coords);
+          return;
+        }
+      }
+    }
+  }, [task, requesterLocation]);
 
   // Request user location with high->low accuracy fallback
   const requestLocation = (highAccuracy = true) => {
@@ -400,42 +475,104 @@ const MapComponent = () => {
     return () => cancelAnimationFrame(animationFrameId);
   }, [userLocation]);
 
-  // Fetch OSRM Road Route whenever displayLocation or destination changes
+  const effectiveReceiverLocation = receiverLocation || displayLocation || userLocation;
+  // Stable receiver position for route calculations (avoids 60fps LERP re-fetch loop)
+  const baseReceiverLocation = receiverLocation || userLocation || defaultInitialPos;
+
+  // Fetch OSRM Road Route & calculate shortest distance from receiver to requester location
   useEffect(() => {
-    const startPos = displayLocation || userLocation;
-    if (!startPos || !destination) return;
+    const startPos = baseReceiverLocation;
+    const endPos = destination || targetRequesterPos;
+
+    if (!startPos || !endPos) return;
 
     const fetchRoadRoute = async () => {
       try {
         setLoadingRoute(true);
         const startLngLat = `${startPos[1]},${startPos[0]}`;
-        const endLngLat = `${destination[1]},${destination[0]}`;
-        const url = `https://router.project-osrm.org/route/v1/driving/${startLngLat};${endLngLat}?overview=full&geometries=geojson`;
+        const endLngLat = `${endPos[1]},${endPos[0]}`;
 
-        const response = await axios.get(url);
-
-        if (response.data?.routes?.[0]?.geometry?.coordinates) {
-          const coords = response.data.routes[0].geometry.coordinates.map(
-            ([lng, lat]) => [lat, lng]
+        let data = null;
+        try {
+          // Try OSRM foot/walking profile first (credentials omitted to pass CORS *)
+          const resFoot = await fetch(
+            `https://router.project-osrm.org/route/v1/foot/${startLngLat};${endLngLat}?overview=full&geometries=geojson&steps=true`,
+            { credentials: "omit" }
           );
-          setFullRoadPath(coords);
+          if (resFoot.ok) {
+            data = await resFoot.json();
+          }
+        } catch (footErr) {
+          console.warn("OSRM foot profile failed, falling back to driving profile:", footErr);
+        }
+
+        if (!data || !data.routes || data.routes.length === 0) {
+          // Fallback to driving profile
+          const resDriving = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${startLngLat};${endLngLat}?overview=full&geometries=geojson&steps=true`,
+            { credentials: "omit" }
+          );
+          if (resDriving.ok) {
+            data = await resDriving.json();
+          }
+        }
+
+        if (data?.routes?.[0]) {
+          const route = data.routes[0];
+
+          // Parse OSRM Path Coordinates Array [lat, lng]
+          if (route.geometry?.coordinates && route.geometry.coordinates.length > 0) {
+            const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+            setFullRoadPath(coords);
+          } else {
+            setFullRoadPath([startPos, endPos]);
+          }
+
+          // Calculate Shortest Distance (Meters to Km)
+          if (typeof route.distance === "number") {
+            const distMeters = route.distance;
+            if (distMeters < 1000) {
+              setShortestDistance(`${Math.round(distMeters)} m`);
+            } else {
+              setShortestDistance(`${(distMeters / 1000).toFixed(2)} km`);
+            }
+          }
+
+          // Calculate Estimated Travel Time (Seconds to Mins)
+          if (typeof route.duration === "number") {
+            const durMins = Math.max(1, Math.ceil(route.duration / 60));
+            setEstimatedDuration(`${durMins} min${durMins > 1 ? "s" : ""}`);
+          }
         } else {
-          setFullRoadPath([startPos, destination]);
+          setFullRoadPath([startPos, endPos]);
+          const fallbackDist = getHaversineDistanceMeters(startPos, endPos);
+          setShortestDistance(fallbackDist < 1000 ? `${Math.round(fallbackDist)} m` : `${(fallbackDist / 1000).toFixed(2)} km`);
+          setEstimatedDuration(`${Math.max(1, Math.ceil((fallbackDist / 1.4) / 60))} mins`);
         }
       } catch (error) {
-        console.error("Failed to fetch road route from OSRM:", error);
-        setFullRoadPath([startPos, destination]);
+        console.error("OSRM Route fetch error, using direct campus path & Haversine distance:", error);
+        setFullRoadPath([startPos, endPos]);
+        const fallbackDist = getHaversineDistanceMeters(startPos, endPos);
+        setShortestDistance(fallbackDist < 1000 ? `${Math.round(fallbackDist)} m` : `${(fallbackDist / 1000).toFixed(2)} km`);
+        setEstimatedDuration(`${Math.max(1, Math.ceil((fallbackDist / 1.4) / 60))} mins`);
       } finally {
         setLoadingRoute(false);
       }
     };
 
     fetchRoadRoute();
-  }, [destination]);
+  }, [
+    destination?.[0],
+    destination?.[1],
+    targetRequesterPos?.[0],
+    targetRequesterPos?.[1],
+    baseReceiverLocation[0],
+    baseReceiverLocation[1]
+  ]);
 
-  // Real-time Path Erasing based on Smoothed Display Position
+  // Real-time Path Erasing based on Smoothed Receiver Position
   useEffect(() => {
-    const currentPos = displayLocation || userLocation;
+    const currentPos = effectiveReceiverLocation;
     if (!currentPos || fullRoadPath.length === 0) return;
 
     let closestIndex = 0;
@@ -451,14 +588,14 @@ const MapComponent = () => {
 
     const upcomingPoints = fullRoadPath.slice(closestIndex + 1);
     setRemainingPath([currentPos, ...upcomingPoints]);
-  }, [displayLocation, fullRoadPath]);
+  }, [effectiveReceiverLocation, fullRoadPath]);
 
   const currentCompassHeading = Math.round((heading % 360 + 360) % 360);
 
   return (
     <div className="w-full h-full relative font-sans select-none overflow-hidden">
       <MapContainer
-        center={displayLocation}
+        center={effectiveReceiverLocation}
         zoom={18}
         maxZoom={22}
         dragging={true}
@@ -475,13 +612,13 @@ const MapComponent = () => {
           maxNativeZoom={19}
         />
 
-        <RecenterMap location={displayLocation} />
+        <RecenterMap location={effectiveReceiverLocation} />
         <MapClickHandler onSelectDestination={(pos) => setDestination(pos)} />
 
-        {/* User Accuracy Circle */}
+        {/* Receiver Accuracy Circle */}
         {accuracy > 0 && (
           <Circle
-            center={displayLocation}
+            center={effectiveReceiverLocation}
             radius={accuracy}
             pathOptions={{
               color: "#3B82F6",
@@ -492,14 +629,40 @@ const MapComponent = () => {
           />
         )}
 
-        {/* User Rotatable Arrow Marker */}
-        <Marker position={displayLocation} icon={createArrowIcon(currentCompassHeading)}>
+        {/* Receiver Rotatable Arrow Marker */}
+        <Marker position={effectiveReceiverLocation} icon={createArrowIcon(currentCompassHeading)}>
           <Popup>
             <div className="text-xs font-sans">
-              <strong className="text-sm font-semibold text-blue-600">Your Live GPS Location</strong>
+              <strong className="text-sm font-semibold text-blue-600">Receiver Live GPS Location</strong>
             </div>
           </Popup>
         </Marker>
+
+        {/* Target Requester Destination Pin Marker */}
+        {targetRequesterPos && (
+          <Marker position={targetRequesterPos} icon={createRequesterIcon()}>
+            <Popup>
+              <div className="p-1 font-sans text-xs min-w-[160px]">
+                <span className="inline-block rounded-md bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 mb-1">
+                  Requester Destination
+                </span>
+                <strong className="block text-sm font-bold text-gray-900 mb-0.5">
+                  {task?.requester_id?.name || "Requester"}
+                </strong>
+                {task?.details && (
+                  <p className="text-gray-600 text-[11px] mb-1">
+                    Block {task.details.block}, Floor {task.details.floor}, Room {task.details.room}
+                  </p>
+                )}
+                {shortestDistance && (
+                  <p className="text-blue-600 font-bold text-xs mt-1">
+                    Shortest Dist: {shortestDistance}
+                  </p>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {/* Render All 27 DSI Campus Landmarks */}
         {CAMPUS_LANDMARKS.map((landmark) => (
@@ -544,7 +707,7 @@ const MapComponent = () => {
           </Marker>
         )}
 
-        {/* Blue Path Line Ahead of User */}
+        {/* OSRM Shortest Path Blue Polyline Line */}
         {remainingPath.length > 1 && (
           <Polyline
             positions={remainingPath}
@@ -558,7 +721,49 @@ const MapComponent = () => {
         )}
       </MapContainer>
 
-      {/* Floating Locate Button in top corner */}
+      {/* Floating Shortest Distance & ETA Info Card Overlay */}
+      <div className="absolute top-4 left-4 z-[1000] bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-gray-200/80 min-w-[220px] max-w-[280px] font-sans">
+        <div className="flex items-center gap-2 mb-2 border-b border-gray-100 pb-1.5">
+          <span className="flex h-2.5 w-2.5 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <h4 className="text-[11px] font-bold text-gray-800 tracking-wider uppercase">
+            OSRM Shortest Path
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-center">
+          <div className="bg-blue-50/80 p-2 rounded-xl border border-blue-100">
+            <span className="text-[9px] text-blue-600 font-bold uppercase tracking-wider block">Shortest Dist</span>
+            <span className="text-xs font-extrabold text-blue-900 mt-0.5 block">
+              {loadingRoute ? "Calculating..." : shortestDistance || "N/A"}
+            </span>
+          </div>
+
+          <div className="bg-emerald-50/80 p-2 rounded-xl border border-emerald-100">
+            <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-wider block">Est. Time</span>
+            <span className="text-xs font-extrabold text-emerald-900 mt-0.5 block">
+              {loadingRoute ? "Calculating..." : estimatedDuration || "N/A"}
+            </span>
+          </div>
+        </div>
+
+        {task?.details && (
+          <div className="mt-2 pt-1.5 text-[10px] text-gray-600 border-t border-gray-100 flex flex-col gap-0.5">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Requester:</span>
+              <span className="font-semibold text-gray-800 truncate max-w-[130px]">{task.requester_id?.name || "Requester"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Target Block:</span>
+              <span className="font-semibold text-gray-800 truncate max-w-[130px]">{task.details?.block || "N/A"} (Rm {task.details?.room || "N/A"})</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Floating Locate Button in top right corner */}
       <button
         onClick={() => requestLocation(true)}
         disabled={isLocating}
@@ -569,14 +774,9 @@ const MapComponent = () => {
           <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
         </svg>
       </button>
-
-      {loadingRoute && (
-        <div className="absolute top-4 left-4 z-[1000] rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-blue-600 shadow-md backdrop-blur-sm animate-pulse">
-          Calculating campus road route...
-        </div>
-      )}
     </div>
   );
 };
 
 export default MapComponent;
+

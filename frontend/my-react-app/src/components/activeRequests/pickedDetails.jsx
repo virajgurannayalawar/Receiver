@@ -22,14 +22,9 @@ export default function PickedDetails({ task, onBack }) {
   return (
     <div className="w-full max-w-md mx-auto space-y-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
       <div className="flex items-center justify-between border-b pb-3">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900 transition cursor-pointer"
-          >
-            &larr; Back
-          </button>
-        )}
+        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          Pickup Stage
+        </span>
         <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 uppercase tracking-wide">
           PICKED UP
         </span>

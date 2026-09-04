@@ -13,7 +13,8 @@ export default function Active() {
     const fetchActiveRequests = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}pickup/activeReq`
+          `${import.meta.env.VITE_BACKEND_URL}pickup/activeReq`,
+          { withCredentials: true }
         );
         if (response.data.activeReqs) {
           setActiveReqs(response.data.activeReqs);

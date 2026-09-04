@@ -22,27 +22,11 @@ export default function ParcelDetails({ task, onBack }) {
 
     return (
         <div className="w-full max-w-md mx-auto space-y-5 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-            {/* Header & Back Button */}
+            {/* Header & Status Badge */}
             <div className="flex items-center justify-between border-b pb-3">
-                <button
-                    onClick={onBack}
-                    className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900 transition"
-                >
-                    <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                    Back
-                </button>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Task Overview
+                </span>
                 <span className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 uppercase tracking-wide">
                     {status || "ACTIVE"}
                 </span>
@@ -190,22 +174,16 @@ export default function ParcelDetails({ task, onBack }) {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
-                {requester_id?.phone && (
+            {requester_id?.phone && (
+                <div className="pt-2">
                     <a
                         href={`tel:${requester_id.phone}`}
-                        className="flex-1 text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition shadow-sm"
+                        className="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition shadow-sm"
                     >
                         Call Requester
                     </a>
-                )}
-                <button
-                    onClick={onBack}
-                    className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition"
-                >
-                    Close Details
-                </button>
-            </div>
+                </div>
+            )}
         </div>
     );
 }
